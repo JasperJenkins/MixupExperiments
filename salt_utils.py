@@ -9,10 +9,9 @@ from random import random
 
 class SaltLoader(Dataset):
   def __init__(self, img_folder, img_mask_folder, depth_file):
-    img_ids = [file.split('/')[3][:-4] for file in glob(img_folder+'*.png')]
+    img_ids = [file.split('/')[4][:-4] for file in glob(img_folder+'*.png')]
     img_paths = []
     img_mask_paths = []
-    
     depth_df = pd.read_csv(depth_file, index_col=0)
     depth_arr = np.empty(len(img_ids))    
     
