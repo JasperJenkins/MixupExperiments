@@ -5,11 +5,10 @@ import numpy as np
 from torch.utils.data import Dataset
 from PIL import Image
 from glob import glob
-from random import random
+from random import random, shuffle
 
-class SaltLoader(Dataset):
-  def __init__(self, img_folder, img_mask_folder, depth_file):
-    img_ids = [file.split('/')[4][:-4] for file in glob(img_folder+'*.png')]
+class SaltData(Dataset):
+  def __init__(self, img_ids, img_folder, img_mask_folder, depth_file):
     img_paths = []
     img_mask_paths = []
     depth_df = pd.read_csv(depth_file, index_col=0)
@@ -45,3 +44,10 @@ class SaltLoader(Dataset):
     
     depth = torch.full([1, 128, 128], (self.depth_arr[idx] - self.depth_mean) / self.depth_std)
     return torch.cat([(F_img.to_tensor(img) - self.img_mean) / self.img_std, depth]), F_img.to_tensor(img_mask)
+
+def get_train_test_salt_data(img_folder, img_mask_folder, depth_file, test_frac):
+  img_ids = [file.split('/')[-1][:-4] for file in glob(img_folder+'*.png')]
+  shuffle(img_ids)
+  train_len = len(img_ids) - round(len(img_ids) * test_frac)
+  return (SaltData(img_ids[:train_len], img_folder, img_mask_folder, depth_file),
+          SaltData(img_ids[train_len:], img_folder, img_mask_folder, depth_file))
